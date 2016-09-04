@@ -64,12 +64,12 @@ function launchJupyter(connectionFile, cwd, terminal) {
   commandExists('jupyter', function(err, exist) {
     if (err) throw err;
     if(exist) {
-      launchTerm('jupyter' + args, cwd, terminal);
+      launchTerminal('jupyter' + args, cwd, terminal);
     } else {
       commandExists('ipython', function(err, exist) {
         if (err) throw err;
         if(exist) {
-          launchTerm('ipython' + args, cwd, terminal);
+          launchTerminal('ipython' + args, cwd, terminal);
         } else {
           throw Error('Could not find `jupyter` or `ipython`.');
         }
