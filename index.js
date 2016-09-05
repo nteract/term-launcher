@@ -1,9 +1,10 @@
 const exec = require('child_process').exec;
 const fs = require('fs');
+const path = require('path');
 const commandExists = require('command-exists');
 const platform = process.platform;
 
-function launchTerminal(command, cwd, terminal) {
+function launchTerminal(command, cwd, terminal = getDefaultTerminal()) {
   if (platform == 'darwin') {
     launchDarwinTerminal(command, cwd, terminal);
   } else if (platform == 'linux') {
@@ -15,30 +16,34 @@ function launchTerminal(command, cwd, terminal) {
   }
 }
 
-function launchDarwinTerminal(command, cwd, terminal = 'Terminal.app') {
-  var scriptPath = 'cmd-script.sh';
-  var script;
-  if (cwd === undefined || cwd === null || cwd === '') {
-    script = `#!/bin/bash\n${command}`;
-  } else {
-    script = `#!/bin/bash\ncd ${cwd}\n${command}`;
-  }
-
-  var cmd = `open -a ${terminal} ${scriptPath}`;
-
-  fs.writeFile(scriptPath, script, (err) => {
-    if (err) throw err;
-    fs.chmod(scriptPath, '755', (err) => {
+function launchDarwinTerminal(command, cwd, terminal) {
+  if (command === undefined || command === null || command === '') {
+    exec(`open -a ${terminal} ${cwd}`, (err) => {
       if (err) throw err;
-      exec(cmd, (err) => {
+    });
+  } else {
+    var scriptPath = path.join(__dirname, 'cmd-script.sh');
+    var script;
+    if (cwd === undefined || cwd === null || cwd === '') {
+      script = `#!/bin/bash\n${command}`;
+    } else {
+      script = `#!/bin/bash\ncd ${cwd}\n${command}`;
+    }
+
+    fs.writeFile(scriptPath, script, (err) => {
+      if (err) throw err;
+      fs.chmod(scriptPath, '755', (err) => {
         if (err) throw err;
+        exec(`open -a ${terminal} ${scriptPath}`, (err) => {
+          if (err) throw err;
+        });
       });
     });
-  });
+  }
 }
 
 function launchLinuxTerminal(command, cwd, terminal) {
-  if (terminal === undefined || terminal === null) {
+  if (terminal === undefined || terminal === null || terminal === '') {
     // Check for existance of common terminals.
     // ref https://github.com/drelyn86/atom-terminus
     var terms = ['gnome-terminal', 'konsole', 'xfce4-terminal', 'lxterminal'];
@@ -64,7 +69,7 @@ function launchLinuxTerminal(command, cwd, terminal) {
   exec(cmd, (err) => { if (err) throw err; });
 }
 
-function launchWindowsTerminal(command, cwd, terminal = 'cmd') {
+function launchWindowsTerminal(command, cwd, terminal) {
   var cmd;
   if (cwd === undefined || cwd === null || cwd === '') {
     cmd = `start ${terminal} /k ${command}`;
@@ -75,7 +80,7 @@ function launchWindowsTerminal(command, cwd, terminal = 'cmd') {
   exec(cmd, (err) => { if (err) throw err; });
 }
 
-function launchJupyter(connectionFile, cwd, terminal) {
+function launchJupyter(connectionFile, cwd, terminal = getDefaultTerminal()) {
   var args = ` console --existing ${connectionFile}`;
   commandExists('jupyter', function(err, exist) {
     if (err) throw err;
@@ -94,7 +99,18 @@ function launchJupyter(connectionFile, cwd, terminal) {
   });
 }
 
+function getDefaultTerminal() {
+  if (platform == 'darwin') {
+    return 'Terminal.app';
+  } else if (platform == 'win32') {
+    return 'cmd';
+  } else {
+    return '';
+  }
+}
+
 module.exports = {
   launchTerminal,
-  launchJupyter
+  launchJupyter,
+  getDefaultTerminal
 };
