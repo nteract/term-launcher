@@ -37,7 +37,23 @@ function launchDarwinTerminal(command, cwd, terminal = 'Terminal.app') {
   });
 }
 
-function launchLinuxTerminal(command, cwd, terminal = 'gnome-terminal') {
+function launchLinuxTerminal(command, cwd, terminal) {
+  if (terminal === undefined || terminal === null) {
+    // Check for existance of common terminals.
+    // ref https://github.com/drelyn86/atom-terminus
+    var terms = ['gnome-terminal', 'konsole', 'xfce4-terminal', 'lxterminal'];
+    terminal = terms[0];
+
+    for (let t of terms) {
+      try {
+        if (fs.statSync('/usr/bin/' + t).isFile()) {
+          terminal = t;
+          break;
+        }
+      } catch (err) {/* Don't throw error */}
+    }
+  }
+
   var cmd;
   if (cwd === undefined || cwd === null || cwd === '') {
     cmd = `${terminal} -e ${command}`;
