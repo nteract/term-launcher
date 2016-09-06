@@ -17,34 +17,33 @@ function launchTerminal(command, cwd, terminal = getDefaultTerminal(), callback 
 }
 
 function launchDarwinTerminal(command, cwd, terminal, callback = noop) {
-  if (command === undefined || command === null || command === '') {
-    exec(`open -a ${terminal} ${cwd}`, callback);
+  var cmd = `open -a ${terminal} `;
+
+  if (!command) {
+    if (cwd) {
+      cmd = cmd + cwd;
+    }
+    exec(cmd, callback);
   } else {
     var scriptPath = path.join(__dirname, 'cmd-script.sh');
-    var script;
-    if (cwd === undefined || cwd === null || cwd === '') {
-      script = `#!/bin/bash\n${command}`;
-    } else {
-      script = `#!/bin/bash\ncd ${cwd}\n${command}`;
-    }
+    var script = `#!/bin/bash\n${joinCommands(cwd, command, '\n')}\n/bin/bash`;
 
     fs.writeFile(scriptPath, script, (err) => {
       if (err) return callback(err);
       fs.chmod(scriptPath, '755', (err) => {
         if (err) return callback(err);
-        exec(`open -a ${terminal} ${scriptPath}`, callback);
+        exec(cmd + scriptPath, callback);
       });
     });
   }
 }
 
 function launchLinuxTerminal(command, cwd, terminal, callback = noop) {
-  if (terminal === undefined || terminal === null || terminal === '') {
+  if (!terminal) {
     // Check for existance of common terminals.
     // ref https://github.com/drelyn86/atom-terminus
     var terms = ['gnome-terminal', 'konsole', 'xfce4-terminal', 'lxterminal'];
     terminal = terms[0];
-
     for (let t of terms) {
       try {
         if (fs.statSync('/usr/bin/' + t).isFile()) {
@@ -54,25 +53,20 @@ function launchLinuxTerminal(command, cwd, terminal, callback = noop) {
       } catch (err) {/* Don't throw error */}
     }
   }
-
+  // http://askubuntu.com/questions/484993/run-command-on-anothernew-terminal-window
+  var commands = joinCommands(cwd, command, '; ');
   var cmd;
-  if (cwd === undefined || cwd === null || cwd === '') {
-    cmd = `${terminal} -e ${command}`;
+  if (commands === '') {
+    cmd = terminal;
   } else {
-    cmd = `${terminal} -e cd ${cwd}; ${command};`;
+    cmd = `${terminal} -e "bash -c \\"${commands}; exec bash\\""`;
   }
 
   exec(cmd, callback);
 }
 
 function launchWindowsTerminal(command, cwd, terminal, callback = noop) {
-  var cmd;
-  if (cwd === undefined || cwd === null || cwd === '') {
-    cmd = `start ${terminal} /k ${command}`;
-  } else {
-    cmd = `start ${terminal} /k cd ${cwd} & ${command}`;
-  }
-
+  var cmd = `start ${terminal} /k "${joinCommands(cwd, command, ' & ')}"`;
   exec(cmd, callback);
 }
 
@@ -104,6 +98,17 @@ function getDefaultTerminal() {
   } else {
     return '';
   }
+}
+
+function joinCommands(cwd, cmd, delimiter) {
+  var cmds = [];
+  if (cwd) {
+    cmds.push(`cd ${cwd}`);
+  }
+  if (cmd) {
+    cmds.push(cmd);
+  }
+  return cmds.join(delimiter);
 }
 
 function noop() {};
