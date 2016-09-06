@@ -66,7 +66,7 @@ function launchLinuxTerminal(command, cwd, terminal, callback = noop) {
 }
 
 function launchWindowsTerminal(command, cwd, terminal, callback = noop) {
-  var cmd = `start ${terminal} /k ${joinCommands(cwd, command, ' & ')}`;
+  var cmd = `start ${terminal} /k "${joinCommands(cwd, command, ' & ')}"`;
   exec(cmd, callback);
 }
 
