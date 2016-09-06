@@ -55,11 +55,13 @@ function launchLinuxTerminal(command, cwd, terminal, callback = noop) {
     }
   }
 
+  // http://askubuntu.com/questions/484993/run-command-on-anothernew-terminal-window
+  var commands = joinCommands(cwd, command, '; ');
   var cmd;
-  if (cwd === undefined || cwd === null || cwd === '') {
-    cmd = `${terminal} -e ${command}`;
+  if (commands === '') {
+    cmd = terminal;
   } else {
-    cmd = `${terminal} -e cd ${cwd}; ${command};`;
+    cmd = `${terminal} -e "bash -c \\"${commands}; exec bash\\""`;
   }
 
   exec(cmd, callback);
@@ -104,6 +106,17 @@ function getDefaultTerminal() {
   } else {
     return '';
   }
+}
+
+function joinCommands(cwd, cmd, delimiter) {
+  var cmds = [];
+  if (cwd !== undefined && cwd !== null && cwd !== '') {
+    cmds.push(`cd ${cwd}`);
+  }
+  if (cmd !== undefined && cmd !== null && cmd !== '') {
+    cmds.push(cmd);
+  }
+  return cmds.join(delimiter);
 }
 
 function noop() {};
