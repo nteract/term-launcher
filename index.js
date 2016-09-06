@@ -4,23 +4,21 @@ const path = require('path');
 const commandExists = require('command-exists');
 const platform = process.platform;
 
-function launchTerminal(command, cwd, terminal = getDefaultTerminal()) {
+function launchTerminal(command, cwd, terminal = getDefaultTerminal(), callback = noop) {
   if (platform == 'darwin') {
-    launchDarwinTerminal(command, cwd, terminal);
+    launchDarwinTerminal(command, cwd, terminal, callback);
   } else if (platform == 'linux') {
-    launchLinuxTerminal(command, cwd, terminal);
+    launchLinuxTerminal(command, cwd, terminal, callback);
   } else if (platform == 'win32') {
-    launchWindowsTerminal(command, cwd, terminal);
+    launchWindowsTerminal(command, cwd, terminal, callback);
   } else {
-    throw Error('Only Linux, OS X and Windows are supported');
+    callback(Error('Only Linux, OS X and Windows are supported'));
   }
 }
 
-function launchDarwinTerminal(command, cwd, terminal) {
+function launchDarwinTerminal(command, cwd, terminal, callback = noop) {
   if (command === undefined || command === null || command === '') {
-    exec(`open -a ${terminal} ${cwd}`, (err) => {
-      if (err) throw err;
-    });
+    exec(`open -a ${terminal} ${cwd}`, (err) => { callback(err); });
   } else {
     var scriptPath = path.join(__dirname, 'cmd-script.sh');
     var script;
@@ -31,18 +29,16 @@ function launchDarwinTerminal(command, cwd, terminal) {
     }
 
     fs.writeFile(scriptPath, script, (err) => {
-      if (err) throw err;
+      if (err) callback(err);
       fs.chmod(scriptPath, '755', (err) => {
-        if (err) throw err;
-        exec(`open -a ${terminal} ${scriptPath}`, (err) => {
-          if (err) throw err;
-        });
+        if (err) callback(err);
+        exec(`open -a ${terminal} ${scriptPath}`, (err) => { callback(err); });
       });
     });
   }
 }
 
-function launchLinuxTerminal(command, cwd, terminal) {
+function launchLinuxTerminal(command, cwd, terminal, callback = noop) {
   if (terminal === undefined || terminal === null || terminal === '') {
     // Check for existance of common terminals.
     // ref https://github.com/drelyn86/atom-terminus
@@ -66,10 +62,10 @@ function launchLinuxTerminal(command, cwd, terminal) {
     cmd = `${terminal} -e cd ${cwd}; ${command};`;
   }
 
-  exec(cmd, (err) => { if (err) throw err; });
+  exec(cmd, (err) => { callback(err); });
 }
 
-function launchWindowsTerminal(command, cwd, terminal) {
+function launchWindowsTerminal(command, cwd, terminal, callback = noop) {
   var cmd;
   if (cwd === undefined || cwd === null || cwd === '') {
     cmd = `start ${terminal} /k ${command}`;
@@ -77,22 +73,23 @@ function launchWindowsTerminal(command, cwd, terminal) {
     cmd = `start ${terminal} /k cd ${cwd}; ${command};`;
   }
 
-  exec(cmd, (err) => { if (err) throw err; });
+  exec(cmd, (err) => { callback(err); });
 }
 
-function launchJupyter(connectionFile, cwd, terminal = getDefaultTerminal()) {
+function launchJupyter(connectionFile, cwd, terminal = getDefaultTerminal(),
+                       callback = noop) {
   var args = ` console --existing ${connectionFile}`;
   commandExists('jupyter', function(err, exist) {
-    if (err) throw err;
+    if (err) callback(err);
     if(exist) {
-      launchTerminal('jupyter' + args, cwd, terminal);
+      launchTerminal('jupyter' + args, cwd, terminal, callback);
     } else {
       commandExists('ipython', function(err, exist) {
-        if (err) throw err;
+        if (err) callback(err);
         if(exist) {
-          launchTerminal('ipython' + args, cwd, terminal);
+          launchTerminal('ipython' + args, cwd, terminal, callback);
         } else {
-          throw Error('Could not find `jupyter` or `ipython`.');
+          callback(Error('Could not find `jupyter` or `ipython`.'));
         }
       });
     }
@@ -108,6 +105,8 @@ function getDefaultTerminal() {
     return '';
   }
 }
+
+function noop() {};
 
 module.exports = {
   launchTerminal,
