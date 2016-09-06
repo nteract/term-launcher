@@ -70,7 +70,7 @@ function launchWindowsTerminal(command, cwd, terminal, callback = noop) {
   if (cwd === undefined || cwd === null || cwd === '') {
     cmd = `start ${terminal} /k ${command}`;
   } else {
-    cmd = `start ${terminal} /k cd ${cwd}; ${command};`;
+    cmd = `start ${terminal} /k cd ${cwd} & ${command}`;
   }
 
   exec(cmd, callback);
