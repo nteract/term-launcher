@@ -19,8 +19,8 @@ function launchTerminal(command, cwd, terminal = getDefaultTerminal(), callback 
 function launchDarwinTerminal(command, cwd, terminal, callback = noop) {
   var cmd = `open -a ${terminal} `;
 
-  if (command === undefined || command === null || command === '') {
-    if (cwd !== undefined && cwd !== null && cwd !== '') {
+  if (!command) {
+    if (cwd) {
       cmd = cmd + cwd;
     }
     exec(cmd, callback);
@@ -39,7 +39,7 @@ function launchDarwinTerminal(command, cwd, terminal, callback = noop) {
 }
 
 function launchLinuxTerminal(command, cwd, terminal, callback = noop) {
-  if (terminal === undefined || terminal === null || terminal === '') {
+  if (!terminal) {
     // Check for existance of common terminals.
     // ref https://github.com/drelyn86/atom-terminus
     var terms = ['gnome-terminal', 'konsole', 'xfce4-terminal', 'lxterminal'];
@@ -102,10 +102,10 @@ function getDefaultTerminal() {
 
 function joinCommands(cwd, cmd, delimiter) {
   var cmds = [];
-  if (cwd !== undefined && cwd !== null && cwd !== '') {
+  if (cwd) {
     cmds.push(`cd ${cwd}`);
   }
-  if (cmd !== undefined && cmd !== null && cmd !== '') {
+  if (cmd) {
     cmds.push(cmd);
   }
   return cmds.join(delimiter);
