@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Launch terminals and jupyter consoles from node.",
   "main": "index.js",
-    "scripts": {
+  "scripts": {
     "test": "mocha --recursive"
   },
   "repository": {
