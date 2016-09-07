@@ -29,3 +29,24 @@ describe('joinCommands', () => {
     expect(term.joinCommands(path, cmd, '; ')).to.equal(joined);
   });
 });
+
+describe('getDefaultTerminal', () => {
+  it('should return the correct terminal for operating sytem', () => {
+    let terminal = term.getDefaultTerminal();
+    if (process.platform == 'darwin') {
+      expect(terminal).to.equal('Terminal.app');
+    } else if (process.platform == 'win32') {
+      expect(terminal).to.equal('cmd');
+    } else if (process.platform == 'linux') {
+      let terms = [
+        'gnome-terminal',
+        'konsole',
+        'xfce4-terminal',
+        'lxterminal',
+        'xterm',
+        ''
+      ];
+      expect(terminal).to.be.oneOf(terms);
+    }
+  });
+});

@@ -40,18 +40,7 @@ function launchDarwinTerminal(command, cwd, terminal, callback = noop) {
 
 function launchLinuxTerminal(command, cwd, terminal, callback = noop) {
   if (!terminal) {
-    // Check for existance of common terminals.
-    // ref https://github.com/drelyn86/atom-terminus
-    var terms = ['gnome-terminal', 'konsole', 'xfce4-terminal', 'lxterminal'];
-    terminal = terms[0];
-    for (let t of terms) {
-      try {
-        if (fs.statSync('/usr/bin/' + t).isFile()) {
-          terminal = t;
-          break;
-        }
-      } catch (err) {/* Don't throw error */}
-    }
+    return callback(Error('Could not find a terminal in the default location.'));
   }
   // http://askubuntu.com/questions/484993/run-command-on-anothernew-terminal-window
   var commands = joinCommands(cwd, command, '; ');
@@ -96,7 +85,25 @@ function getDefaultTerminal() {
   } else if (platform == 'win32') {
     return 'cmd';
   } else {
-    return '';
+    // Check for existance of common terminals.
+    // ref https://github.com/drelyn86/atom-terminus
+    var terminal = '';
+    var terms = [
+      'gnome-terminal',
+      'konsole',
+      'xfce4-terminal',
+      'lxterminal',
+      'xterm'
+    ];
+    for (let t of terms) {
+      try {
+        if (fs.statSync('/usr/bin/' + t).isFile()) {
+          terminal = t;
+          break;
+        }
+      } catch (err) {/* Don't throw error */}
+    }
+    return terminal;
   }
 }
 
