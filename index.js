@@ -4,26 +4,32 @@ const path = require('path');
 const commandExists = require('command-exists');
 const platform = process.platform;
 
-function launchTerminal(command, cwd, terminal = getDefaultTerminal(), callback = noop) {
+function launchTerminal(command, cwd, terminal = getDefaultTerminal(),
+                        callback = () => {}) {
+
+  if (!terminal) return callback(Error('Could not find the terminal.'));
   if (platform == 'darwin') {
-    launchDarwinTerminal(command, cwd, terminal, callback);
+    getDarwinCommand(command, cwd, terminal, (err, cmd) => {
+      if (err) return callback(err);
+      exec(cmd, callback);
+    });
   } else if (platform == 'linux') {
-    launchLinuxTerminal(command, cwd, terminal, callback);
+    exec(getLinuxCommand(command, cwd, terminal), callback);
   } else if (platform == 'win32') {
-    launchWindowsTerminal(command, cwd, terminal, callback);
+    exec(getWindowsCommand(command, cwd, terminal), callback);
   } else {
     callback(Error('Only Linux, OS X and Windows are supported'));
   }
 }
 
-function launchDarwinTerminal(command, cwd, terminal, callback = noop) {
+function getDarwinCommand(command, cwd, terminal, callback) {
   var cmd = `open -a ${terminal} `;
 
   if (!command) {
     if (cwd) {
       cmd = cmd + cwd;
     }
-    exec(cmd, callback);
+    callback(null, cmd);
   } else {
     var scriptPath = path.join(__dirname, 'cmd-script.sh');
     var script = `#!/bin/bash\n${joinCommands(cwd, command, '\n')}\n/bin/bash`;
@@ -32,16 +38,13 @@ function launchDarwinTerminal(command, cwd, terminal, callback = noop) {
       if (err) return callback(err);
       fs.chmod(scriptPath, '755', (err) => {
         if (err) return callback(err);
-        exec(cmd + scriptPath, callback);
+        callback(null, cmd + scriptPath);
       });
     });
   }
 }
 
-function launchLinuxTerminal(command, cwd, terminal, callback = noop) {
-  if (!terminal) {
-    return callback(Error('Could not find a terminal in the default location.'));
-  }
+function getLinuxCommand(command, cwd, terminal) {
   // http://askubuntu.com/questions/484993/run-command-on-anothernew-terminal-window
   var commands = joinCommands(cwd, command, '; ');
   var cmd;
@@ -50,13 +53,11 @@ function launchLinuxTerminal(command, cwd, terminal, callback = noop) {
   } else {
     cmd = `${terminal} -e "bash -c \\"${commands}; exec bash\\""`;
   }
-
-  exec(cmd, callback);
+  return cmd;
 }
 
-function launchWindowsTerminal(command, cwd, terminal, callback = noop) {
-  var cmd = `start ${terminal} /k "${joinCommands(cwd, command, ' & ')}"`;
-  exec(cmd, callback);
+function getWindowsCommand(command, cwd, terminal) {
+  return `start ${terminal} /k "${joinCommands(cwd, command, ' & ')}"`;
 }
 
 function launchJupyter(connectionFile, cwd, terminal = getDefaultTerminal(),
@@ -118,11 +119,12 @@ function joinCommands(cwd, cmd, delimiter) {
   return cmds.join(delimiter);
 }
 
-function noop() {};
-
 module.exports = {
   launchTerminal,
   launchJupyter,
   getDefaultTerminal,
-  joinCommands
+  joinCommands,
+  getDarwinCommand,
+  getLinuxCommand,
+  getWindowsCommand
 };
