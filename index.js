@@ -47,13 +47,10 @@ function getDarwinCommand(command, cwd, terminal, callback) {
 function getLinuxCommand(command, cwd, terminal) {
   // http://askubuntu.com/questions/484993/run-command-on-anothernew-terminal-window
   var commands = joinCommands(cwd, command, '; ');
-  var cmd;
-  if (commands === '') {
-    cmd = terminal;
-  } else {
-    cmd = `${terminal} -e "bash -c \\"${commands}; exec bash\\""`;
+  if (commands) {
+    return `${terminal} -e "bash -c \\"${commands}; exec bash\\""`;
   }
-  return cmd;
+  return terminal;
 }
 
 function getWindowsCommand(command, cwd, terminal) {

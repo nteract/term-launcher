@@ -1,7 +1,9 @@
 const expect = require('chai').expect;
 const term = require('../index.js');
+const path = require('path');
+const fs = require('fs');
 
-describe('joinCommands', () => {
+describe('joinCommands()', () => {
   it('should not join empty commands', () => {
     expect(term.joinCommands('', '', '; ')).to.be.empty;
     expect(term.joinCommands(null, null, '; ')).to.be.empty;
@@ -30,7 +32,7 @@ describe('joinCommands', () => {
   });
 });
 
-describe('getDefaultTerminal', () => {
+describe('getDefaultTerminal()', () => {
   it('should return the correct terminal for operating sytem', () => {
     let terminal = term.getDefaultTerminal();
     if (process.platform == 'darwin') {
@@ -50,3 +52,55 @@ describe('getDefaultTerminal', () => {
     }
   });
 });
+
+describe('getWindowsCommand()', () => {
+  it('should return the correct command for windows', () => {
+    let cmd = term.getWindowsCommand('foo bar', '/path/to/go', 'cmd.exe');
+    expect(cmd).to.equal('start cmd.exe /k "cd /path/to/go & foo bar"');
+  });
+});
+
+describe('getLinuxCommand()', () => {
+  it('should return the correct command for linux', () => {
+    let cmd = term.getLinuxCommand('foo bar', '/path/to/go', 'konsole');
+    let string = 'konsole -e "bash -c \\"cd /path/to/go; foo bar; exec bash\\""'
+    expect(cmd).to.equal(string);
+  });
+
+  it('should return the terminal for empty path and command', () => {
+    let cmd = term.getLinuxCommand('', '', 'konsole');
+    expect(cmd).to.equal('konsole');
+  });
+});
+
+describe('getDarwinCommand()', () => {
+  it('should return the correct command for mac', (done) => {
+    term.getDarwinCommand('foo bar', '/path/to/go', 'iTerm.app', (err, cmd) => {
+      let scriptPath = path.join(__dirname, '..', 'cmd-script.sh');
+      let stats = fs.statSync(scriptPath);
+      let script = '#!/bin/bash\ncd /path/to/go\nfoo bar\n/bin/bash';
+
+      expect(stats.isFile()).to.be.true;
+      expect(fs.readFileSync(scriptPath, {encoding: 'utf8'})).to.equal(script);
+      expect(cmd).to.equal('open -a iTerm.app ' + scriptPath);
+      done(err);
+    });
+  });
+
+  it('should return the terminal for empty path and command', (done) => {
+    term.getDarwinCommand('', '', 'iTerm.app', (err, cmd) => {
+      expect(cmd).to.equal('open -a iTerm.app ');
+      done(err);
+    });
+  });
+});
+
+describe('launchTerminal()', () => {
+  it('should callback an error if no terminal is given', (done) => {
+    term.launchTerminal('', '', '', (err) => {
+      expect(err).not.to.be.null;
+      expect(err).to.be.an('error');
+      done();
+    })
+  });
+})
