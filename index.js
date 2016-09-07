@@ -116,5 +116,6 @@ function noop() {};
 module.exports = {
   launchTerminal,
   launchJupyter,
-  getDefaultTerminal
+  getDefaultTerminal,
+  joinCommands
 };
