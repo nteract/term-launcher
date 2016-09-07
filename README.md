@@ -1,6 +1,11 @@
-# term-launcher
+# :computer: :rocket: Term Launcher
 
 Launch terminals and jupyter consoles from node.
+
+## Installation
+```
+npm install term-launcher
+```
 
 ## Usage
 ```javascript
