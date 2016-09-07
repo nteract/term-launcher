@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Launch terminals and jupyter consoles from node.",
   "main": "index.js",
+  "scripts": {
+    "test": "mocha --recursive"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/nteract/term-launcher.git"
@@ -18,5 +21,9 @@
   "license": "MIT",
   "dependencies": {
     "command-exists": "^1.0.2"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.0.2"
   }
 }
