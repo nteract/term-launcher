@@ -4,6 +4,16 @@ const path = require('path');
 const commandExists = require('command-exists');
 const platform = process.platform;
 
+/**
+ * Launches a Terminal at the given directory and executes a command.
+ * @param {string} [command]    The command to execute in the terminal.
+ * @param {string} [cwd]        The current working directory where the terminal
+ *                              will be launched.
+ * @param {string} [terminal=getDefaultTerminal()]
+ *                              The terminal to launch. This will depend on your
+ *                              operating system.
+ * @param {Callback} [callback] Calls back errors.
+ */
 function launchTerminal(command, cwd, terminal = getDefaultTerminal(),
                         callback = noop) {
 
@@ -57,6 +67,21 @@ function _getWindowsCommand(command, cwd, terminal) {
   return `start ${terminal} /k "${_joinCommands(cwd, command, ' & ')}"`;
 }
 
+/**
+ * Launches a jupyter or ipython console and connects to the kernel defined in
+ * the connection file. It starts the console by execution
+ * <code>jupyter jupyterConsole --existing connectionFile</code>.
+ * @param {string} connectionFile The path to the connection file of the kernel
+ *                                to connect to.
+ * @param {string} [cwd]          The current working directory where the
+ *                                terminal will be launched.
+ * @param {string} [jupyterConsole=console]
+ *                                The jupyter console to start (eg qtconsole).
+ * @param {string} [terminal=getDefaultTerminal()]
+ *                                The terminal to launch. This will depend on
+ *                                your operating system.
+ * @param {Callback} [callback]   Calls back errors.
+ */
 function launchJupyter(connectionFile, cwd, jupyterConsole = 'console',
                        terminal = getDefaultTerminal(), callback = noop) {
 
@@ -78,6 +103,14 @@ function launchJupyter(connectionFile, cwd, jupyterConsole = 'console',
   });
 }
 
+/**
+ * Returns the default terminal for your operation system: <br>
+ * macOS: Terminal.app <br>
+ * Windows: cmd <br>
+ * Linux: Checks for the existance of gnome-terminal, konsole, xfce4-terminal,
+ *        lxterminal or xterm.
+ * @return {string} terminal
+ */
 function getDefaultTerminal() {
   if (platform == 'darwin') {
     return 'Terminal.app';
