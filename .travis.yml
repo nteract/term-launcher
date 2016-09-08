@@ -1,3 +1,9 @@
 language: node_js
 node_js:
-  - "6"
+- '6'
+env:
+  global:
+  - GH_REF: github.com/nteract/term-launcher.git
+  - secure: QJ5k3V905M/ocuOQu4HuvjmmtAyD8Kfb4B/YNCNJxXJSAUhYTMJ9jaUcynFiiikI0FHlMjkc/+w8jGqZ3bvOJxhC+z/mWOo7JV0zKTiziSalOYALAkLAK60KYCyCIAe1s5niI6ntXc7EUCZxXjmFZ+5fFbKUyDpW76QjVBVuLYVmd8Pcv12VVVlKMEM/A9K8oHTaNPqap1e5vdg78hnXguu03M9TNEpbPeEERbOO+f2et9bMFaC/ZL4cozLw2JlC0jmvHQfecTMWH0qsN6FWCfevHrWUA+AcRWeqUQdt050wd52G9Rd1kLrFiVlzGPmBMMMjWBNTBG9Fti0A3vue97C4aqTAQ7n7C8zIpbt1X9RLML+X28py1C5EFPK/xBpchY+suE2SfubIr9gFfLdwL+4d7EA8H4tMEnB+zKnvV0LIkxKd6uGj6UDNTvTiRV6fyvTbJuxhrg6KLoc+4qsPfze4X5i8BTmxNgEDdIv8zNpk09gsbOLVhNTguT2BBb0ORCQEVf1gM0iZOgc3JFAol92F/OffwNH7Av5kRuWoJs/1QhBp0Hk15x8XFrLSJ9ZYHrvklAwm53+PNbmCh7C5PTI47iHsfcpFDAbcKbyy9Hc7gAXcbHsbFFFU24g+escyDIR2vkdaWYFOwga5Am8o/tbAq2bLpmNgbJ/Gn8Ebpx4=
+after_success:
+- bash ./travis_after_success.sh
