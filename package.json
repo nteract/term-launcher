@@ -4,7 +4,8 @@
   "description": "Launch terminals and jupyter consoles from node.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --recursive"
+    "test": "mocha --recursive",
+    "build:docs": "jsdoc -R README.md -d docs index.js"
   },
   "repository": {
     "type": "git",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "jsdoc": "^3.4.0",
     "mocha": "^3.0.2"
   }
 }

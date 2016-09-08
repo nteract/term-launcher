@@ -4,25 +4,35 @@ const path = require('path');
 const commandExists = require('command-exists');
 const platform = process.platform;
 
+/**
+ * Launches a Terminal at the given directory and executes a command.
+ * @param {string} [command]    The command to execute in the terminal.
+ * @param {string} [cwd]        The current working directory where the terminal
+ *                              will be launched.
+ * @param {string} [terminal=getDefaultTerminal()]
+ *                              The terminal to launch. This will depend on your
+ *                              operating system.
+ * @param {Callback} [callback] Calls back errors.
+ */
 function launchTerminal(command, cwd, terminal = getDefaultTerminal(),
                         callback = noop) {
 
   if (!terminal) return callback(Error('Could not find the terminal.'));
   if (platform == 'darwin') {
-    getDarwinCommand(command, cwd, terminal, (err, cmd) => {
+    _getDarwinCommand(command, cwd, terminal, (err, cmd) => {
       if (err) return callback(err);
       exec(cmd, callback);
     });
   } else if (platform == 'linux') {
-    exec(getLinuxCommand(command, cwd, terminal), callback);
+    exec(_getLinuxCommand(command, cwd, terminal), callback);
   } else if (platform == 'win32') {
-    exec(getWindowsCommand(command, cwd, terminal), callback);
+    exec(_getWindowsCommand(command, cwd, terminal), callback);
   } else {
     callback(Error('Only Linux, OS X and Windows are supported'));
   }
 }
 
-function getDarwinCommand(command, cwd, terminal, callback) {
+function _getDarwinCommand(command, cwd, terminal, callback) {
   var cmd = `open -a ${terminal} `;
 
   if (!command) {
@@ -32,7 +42,7 @@ function getDarwinCommand(command, cwd, terminal, callback) {
     callback(null, cmd);
   } else {
     var scriptPath = path.join(__dirname, 'cmd-script.sh');
-    var script = `#!/bin/bash\n${joinCommands(cwd, command, '\n')}\n/bin/bash`;
+    var script = `#!/bin/bash\n${_joinCommands(cwd, command, '\n')}\n/bin/bash`;
 
     fs.writeFile(scriptPath, script, (err) => {
       if (err) return callback(err);
@@ -44,19 +54,34 @@ function getDarwinCommand(command, cwd, terminal, callback) {
   }
 }
 
-function getLinuxCommand(command, cwd, terminal) {
+function _getLinuxCommand(command, cwd, terminal) {
   // http://askubuntu.com/questions/484993/run-command-on-anothernew-terminal-window
-  var commands = joinCommands(cwd, command, '; ');
+  var commands = _joinCommands(cwd, command, '; ');
   if (commands) {
     return `${terminal} -e "bash -c \\"${commands}; exec bash\\""`;
   }
   return terminal;
 }
 
-function getWindowsCommand(command, cwd, terminal) {
-  return `start ${terminal} /k "${joinCommands(cwd, command, ' & ')}"`;
+function _getWindowsCommand(command, cwd, terminal) {
+  return `start ${terminal} /k "${_joinCommands(cwd, command, ' & ')}"`;
 }
 
+/**
+ * Launches a jupyter or ipython console and connects to the kernel defined in
+ * the connection file. It starts the console by execution
+ * <code>jupyter jupyterConsole --existing connectionFile</code>.
+ * @param {string} connectionFile The path to the connection file of the kernel
+ *                                to connect to.
+ * @param {string} [cwd]          The current working directory where the
+ *                                terminal will be launched.
+ * @param {string} [jupyterConsole=console]
+ *                                The jupyter console to start (eg qtconsole).
+ * @param {string} [terminal=getDefaultTerminal()]
+ *                                The terminal to launch. This will depend on
+ *                                your operating system.
+ * @param {Callback} [callback]   Calls back errors.
+ */
 function launchJupyter(connectionFile, cwd, jupyterConsole = 'console',
                        terminal = getDefaultTerminal(), callback = noop) {
 
@@ -78,6 +103,14 @@ function launchJupyter(connectionFile, cwd, jupyterConsole = 'console',
   });
 }
 
+/**
+ * Returns the default terminal for your operation system: <br>
+ * macOS: Terminal.app <br>
+ * Windows: cmd <br>
+ * Linux: Checks for the existance of gnome-terminal, konsole, xfce4-terminal,
+ *        lxterminal or xterm.
+ * @return {string} terminal
+ */
 function getDefaultTerminal() {
   if (platform == 'darwin') {
     return 'Terminal.app';
@@ -106,7 +139,7 @@ function getDefaultTerminal() {
   }
 }
 
-function joinCommands(cwd, cmd, delimiter) {
+function _joinCommands(cwd, cmd, delimiter) {
   var cmds = [];
   if (cwd) {
     cmds.push(`cd ${cwd}`);
@@ -123,8 +156,8 @@ module.exports = {
   launchTerminal,
   launchJupyter,
   getDefaultTerminal,
-  joinCommands,
-  getDarwinCommand,
-  getLinuxCommand,
-  getWindowsCommand
+  _joinCommands,
+  _getDarwinCommand,
+  _getLinuxCommand,
+  _getWindowsCommand
 };
