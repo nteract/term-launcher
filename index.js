@@ -5,7 +5,7 @@ const commandExists = require('command-exists');
 const platform = process.platform;
 
 function launchTerminal(command, cwd, terminal = getDefaultTerminal(),
-                        callback = () => {}) {
+                        callback = noop) {
 
   if (!terminal) return callback(Error('Could not find the terminal.'));
   if (platform == 'darwin') {
@@ -57,9 +57,10 @@ function getWindowsCommand(command, cwd, terminal) {
   return `start ${terminal} /k "${joinCommands(cwd, command, ' & ')}"`;
 }
 
-function launchJupyter(connectionFile, cwd, terminal = getDefaultTerminal(),
-                       callback = noop) {
-  var args = ` console --existing ${connectionFile}`;
+function launchJupyter(connectionFile, cwd, jupyterConsole = 'console',
+                       terminal = getDefaultTerminal(), callback = noop) {
+
+  var args = ` ${jupyterConsole} --existing ${connectionFile}`;
   commandExists('jupyter', function(err, exist) {
     if (err) return callback(err);
     if(exist) {
@@ -115,6 +116,8 @@ function joinCommands(cwd, cmd, delimiter) {
   }
   return cmds.join(delimiter);
 }
+
+function noop() {};
 
 module.exports = {
   launchTerminal,
