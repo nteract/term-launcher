@@ -64,7 +64,14 @@ function _getLinuxCommand(command, cwd, terminal) {
 }
 
 function _getWindowsCommand(command, cwd, terminal) {
-  return `start ${terminal} /k "${_joinCommands(cwd, command, ' & ')}"`;
+  // Every terminal on Windows has its own arguments.
+  var args = {
+    cmd: '/k',
+    cmder: '/START',
+    powershell: '-NoExit'
+  };
+  var term = terminal.toLowerCase().trim();
+  return `start ${terminal} ${args[term]} "${_joinCommands(cwd, command, ' & ')}"`;
 }
 
 /**
