@@ -71,7 +71,16 @@ function _getWindowsCommand(command, cwd, terminal) {
     powershell: '-NoExit'
   };
   var term = terminal.toLowerCase().trim();
-  return `start ${terminal} ${args[term]} "${_joinCommands(cwd, command, ' & ')}"`;
+
+  // '/k' is default
+  var argument = '/k';
+  if (args.hasOwnProperty(term)) {
+    argument = args[term];
+  } else if (args.hasOwnProperty(term.replace(/.exe$/, ''))) { //In case of '.exe' suffix
+    argument = args[term.replace(/.exe$/, '')];
+  }
+
+  return `start ${terminal} ${argument} "${_joinCommands(cwd, command, ' & ')}"`;
 }
 
 /**
