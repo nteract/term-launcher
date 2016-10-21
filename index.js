@@ -64,7 +64,23 @@ function _getLinuxCommand(command, cwd, terminal) {
 }
 
 function _getWindowsCommand(command, cwd, terminal) {
-  return `start ${terminal} /k "${_joinCommands(cwd, command, ' & ')}"`;
+  // Every terminal on Windows has its own arguments.
+  var args = {
+    cmd: '/k',
+    cmder: '/START',
+    powershell: '-NoExit'
+  };
+  var term = terminal.toLowerCase().trim();
+
+  // '/k' is default
+  var argument = '/k';
+  if (args.hasOwnProperty(term)) {
+    argument = args[term];
+  } else if (args.hasOwnProperty(term.replace(/.exe$/, ''))) { //In case of '.exe' suffix
+    argument = args[term.replace(/.exe$/, '')];
+  }
+
+  return `start ${terminal} ${argument} "${_joinCommands(cwd, command, ' & ')}"`;
 }
 
 /**
