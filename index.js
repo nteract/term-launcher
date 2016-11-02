@@ -33,11 +33,11 @@ function launchTerminal(command, cwd, terminal = getDefaultTerminal(),
 }
 
 function _getDarwinCommand(command, cwd, terminal, callback) {
-  var cmd = `open -a ${terminal} `;
+  var cmd = `open -a ${terminal}`;
 
   if (!command) {
     if (cwd) {
-      cmd = cmd + cwd;
+      cmd = `${cmd} "${cwd}"`;
     }
     callback(null, cmd);
   } else {
@@ -48,7 +48,7 @@ function _getDarwinCommand(command, cwd, terminal, callback) {
       if (err) return callback(err);
       fs.chmod(scriptPath, '755', (err) => {
         if (err) return callback(err);
-        callback(null, cmd + scriptPath);
+        callback(null, `${cmd} "${scriptPath}"`);
       });
     });
   }
