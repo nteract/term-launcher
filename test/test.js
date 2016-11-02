@@ -82,14 +82,21 @@ describe('getDarwinCommand()', () => {
 
       expect(stats.isFile()).to.be.true;
       expect(fs.readFileSync(scriptPath, {encoding: 'utf8'})).to.equal(script);
-      expect(cmd).to.equal('open -a iTerm.app ' + scriptPath);
+      expect(cmd).to.equal(`open -a iTerm.app "${scriptPath}"`);
+      done(err);
+    });
+  });
+
+  it('should return the command to open a path', (done) => {
+    term._getDarwinCommand('', '/path/to/go', 'iTerm.app', (err, cmd) => {
+      expect(cmd).to.equal('open -a iTerm.app "/path/to/go"');
       done(err);
     });
   });
 
   it('should return the terminal for empty path and command', (done) => {
     term._getDarwinCommand('', '', 'iTerm.app', (err, cmd) => {
-      expect(cmd).to.equal('open -a iTerm.app ');
+      expect(cmd).to.equal('open -a iTerm.app');
       done(err);
     });
   });
