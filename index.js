@@ -58,7 +58,7 @@ function _getLinuxCommand(command, cwd, terminal) {
   // http://askubuntu.com/questions/484993/run-command-on-anothernew-terminal-window
   var commands = _joinCommands(cwd, command, '; ');
   if (commands) {
-    return `${terminal} -e "bash -c \\"${commands}; exec bash\\""`;
+    return `${terminal} -e 'bash -c "${commands}; exec bash"'`;
   }
   return terminal;
 }
@@ -80,7 +80,7 @@ function _getWindowsCommand(command, cwd, terminal) {
     argument = args[term.replace(/.exe$/, '')];
   }
 
-  return `start ${terminal} ${argument} "${_joinCommands(cwd, command, ' & ')}"`;
+  return `start ${terminal} ${argument} "${_joinCommands(cwd, command, ' & ').replace(/"/g, '\\"')}"`;
 }
 
 /**
@@ -158,7 +158,7 @@ function getDefaultTerminal() {
 function _joinCommands(cwd, cmd, delimiter) {
   var cmds = [];
   if (cwd) {
-    cmds.push(`cd ${cwd}`);
+    cmds.push(`cd "${cwd}"`);
   }
   if (cmd) {
     cmds.push(cmd);
