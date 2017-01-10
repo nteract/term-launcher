@@ -101,16 +101,36 @@ function _getWindowsCommand(command, cwd, terminal) {
 function launchJupyter(connectionFile, cwd, jupyterConsole = 'console',
                        terminal = getDefaultTerminal(), callback = noop) {
 
+  getConnectionCommand(connectionFile, jupyterConsole, function(err, command) {
+    if (err) return callback(err);
+    launchTerminal(command, cwd, terminal, callback);
+  })
+}
+
+/**
+ * Returns the command to connect to the kernel defined in the connection file.
+ * E.g. <code>jupyter console --existing connectionFile</code>.
+ * @param {string} connectionFile The path to the connection file of the kernel
+ *                                to connect to.
+ * @param {string} [jupyterConsole=console]
+ *                                The jupyter console to start (e.g. console or qtconsole).
+ * @param {Callback} [callback]   Calls back any errors and the connection command (err, command).
+ */
+function getConnectionCommand(connectionFile, jupyterConsole, callback) {
+  if (!callback && typeof jupyterConsole === 'function') {
+    callback = jupyterConsole;
+    jupyterConsole = 'console';
+  }
   var args = ` ${jupyterConsole} --existing ${connectionFile}`;
   commandExists('jupyter', function(err, exist) {
     if (err) return callback(err);
     if(exist) {
-      launchTerminal('jupyter' + args, cwd, terminal, callback);
+      callback(null, 'jupyter' + args);
     } else {
       commandExists('ipython', function(err, exist) {
         if (err) return callback(err);
         if(exist) {
-          launchTerminal('ipython' + args, cwd, terminal, callback);
+          callback(null, 'ipython' + args);
         } else {
           callback(Error('Could not find `jupyter` or `ipython`.'));
         }
@@ -172,6 +192,7 @@ module.exports = {
   launchTerminal,
   launchJupyter,
   getDefaultTerminal,
+  getConnectionCommand,
   _joinCommands,
   _getDarwinCommand,
   _getLinuxCommand,
