@@ -1,3 +1,4 @@
+const commandExists = require('command-exists');
 const expect = require('chai').expect;
 const term = require('../index.js');
 const path = require('path');
@@ -110,4 +111,59 @@ describe('launchTerminal()', () => {
       done();
     })
   });
+})
+
+// TODO test with spies
+describe('getConnectionCommand()', () => {
+  it('should get the right command or error', (done) => {
+    term.getConnectionCommand('connection-file', (err, cmd) => {
+      commandExists('jupyter', function(e, exist) {
+        if (e) throw(e);
+        if(exist) {
+          expect(err).to.be.null;
+          expect(cmd).to.equal('jupyter console --existing connection-file');
+          done();
+        } else {
+          commandExists('ipython', function(e, exist) {
+            if (e) throw(e);
+            if(exist) {
+              expect(err).to.be.null;
+              expect(cmd).to.equal('ipython console --existing connection-file');
+              done();
+            } else {
+              expect(err).not.to.be.null;
+              expect(err.message).to.equal('Could not find `jupyter` or `ipython`.');
+              done();
+            }
+          });
+        }
+      })
+    })
+  })
+
+  it('should get the right command for qtconsole or error', (done) => {
+    term.getConnectionCommand('connection-file', 'qtconsole', (err, cmd) => {
+      commandExists('jupyter', function(e, exist) {
+        if (e) throw(e);
+        if(exist) {
+          expect(err).to.be.null;
+          expect(cmd).to.equal('jupyter qtconsole --existing connection-file');
+          done();
+        } else {
+          commandExists('ipython', function(e, exist) {
+            if (e) throw(e);
+            if(exist) {
+              expect(err).to.be.null;
+              expect(cmd).to.equal('ipython qtconsole --existing connection-file');
+              done();
+            } else {
+              expect(err).not.to.be.null;
+              expect(err.message).to.equal('Could not find `jupyter` or `ipython`.');
+              done();
+            }
+          });
+        }
+      })
+    })
+  })
 })
