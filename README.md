@@ -1,5 +1,7 @@
 # :computer: :rocket: Term Launcher
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/nteract/term-launcher.svg)](https://greenkeeper.io/)
+
 Launch terminals and jupyter consoles from node.
 
 ## Installation
