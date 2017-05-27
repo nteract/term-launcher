@@ -24,7 +24,7 @@
     "command-exists": "^1.0.2"
   },
   "devDependencies": {
-    "chai": "^3.5.0",
+    "chai": "^4.0.0",
     "jsdoc": "^3.4.0",
     "mocha": "^3.0.2"
   }
