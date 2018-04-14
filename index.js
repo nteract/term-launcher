@@ -64,23 +64,57 @@ function _getLinuxCommand(command, cwd, terminal) {
 }
 
 function _getWindowsCommand(command, cwd, terminal) {
-  // Every terminal on Windows has its own arguments.
-  var args = {
-    cmd: '/k',
-    cmder: '/START',
-    powershell: '-NoExit'
-  };
-  var term = terminal.toLowerCase().trim();
+  var term = terminal.toLowerCase().trim().replace(/\.exe$/g, '');
 
-  // '/k' is default
-  var argument = '/k';
-  if (args.hasOwnProperty(term)) {
-    argument = args[term];
-  } else if (args.hasOwnProperty(term.replace(/.exe$/, ''))) { //In case of '.exe' suffix
-    argument = args[term.replace(/.exe$/, '')];
+  switch (term) {
+    case 'cmder':
+      return _getCmderCommand(command, cwd);
+    case 'powershell':
+      return _getPowershellCommand(command, cwd);
+    case 'cmd':
+    default:
+      return _getCmdCommand(command, cwd);
+  }
+}
+
+function _getCmdCommand(command, cwd) {
+  var commandSegment = '';
+  if (command) {
+    if (cwd) {
+      commandSegment = ('"cd /d ' + cwd + ' & ' + command + '"');
+    } else {
+      commandSegment = command;
+    }
+  }
+  return `start cmd /K ${commandSegment}`;
+}
+
+function _getPowershellCommand(command, cwd) {
+  var commandSegment = '';
+  if (command) {
+    if (cwd) {
+      commandSegment = ('"cd ' + cwd + ' ; ' +
+        command.replace(/"/g, '\\"') + '"');
+    } else {
+      commandSegment = command.replace(/"/g, '\\"');
+    }
+  }
+  return `start powershell -noexit -command ${commandSegment}`;
+}
+
+function _getCmderCommand(command, cwd) {
+  var cwdSegment = '';
+  if (cwd) {
+    cwd = cwd.replace(/"/g, '\\"');
+    cwdSegment = '/START "' + cwd + '"';
   }
 
-  return `start ${terminal} ${argument} "${_joinCommands(cwd, command, ' & ').replace(/"/g, '\\"')}"`;
+  var commandSegment = '';
+  if (command) {
+    commandSegment = '/TASK "' + command.replace(/"/g, '\\"') + '"';
+  }
+
+  return `start cmder ${cwdSegment} ${commandSegment}`;
 }
 
 /**
@@ -196,5 +230,8 @@ module.exports = {
   _joinCommands,
   _getDarwinCommand,
   _getLinuxCommand,
-  _getWindowsCommand
+  _getWindowsCommand,
+  _getCmderCommand,
+  _getPowershellCommand,
+  _getCmdCommand,
 };
