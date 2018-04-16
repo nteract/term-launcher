@@ -23,4 +23,4 @@ term.launchJupyter('<path-to-connection-file>', 'Desktop', 'iTerm.app');
 
 ## Documentation
 
-The full API documentation can be found [here](http://nteract.io/term-launcher/).
+[API Documentation](https://nteract.github.io/term-launcher/).
