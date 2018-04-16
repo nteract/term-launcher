@@ -1,6 +1,6 @@
 {
   "name": "term-launcher",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Launch terminals and jupyter consoles from node.",
   "main": "index.js",
   "scripts": {
