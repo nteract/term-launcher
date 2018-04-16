@@ -56,8 +56,8 @@ describe('getDefaultTerminal()', () => {
 
 describe('getWindowsCommand()', () => {
   it('should return the correct command for windows', () => {
-    let cmd = term._getWindowsCommand('foo bar', '/path/to/go', 'cmd.exe');
-    expect(cmd).to.equal('start cmd.exe /k "cd \\"/path/to/go\\" & foo bar"');
+    let cmd = term._getWindowsCommand('foo bar', 'C:\\path\\to\\go', 'cmd.exe');
+    expect(cmd).to.equal('start cmd /K "cd /d C:\\path\\to\\go & foo bar"');
   });
 });
 
@@ -167,3 +167,27 @@ describe('getConnectionCommand()', () => {
     })
   })
 })
+
+describe('getCmderCommand()', () => {
+  it('should return the correct command for cmder', (done) => {
+    const command = term._getCmderCommand('dir', 'C:\\Users');
+    expect(command).to.equal('start cmder /START "C:\\Users" /TASK "dir"');
+    done();
+  });
+});
+
+describe('getPowershellCommand()', () => {
+  it('should return the correct command for powershell', done => {
+    const command = term._getPowershellCommand('dir', 'C:\\Users');
+    expect(command).to.equal('start powershell -noexit -command "cd C:\\Users ; dir\"');
+    done();
+  });
+});
+
+describe('getCmdCommand()', () => {
+  it('should return the correct command for cmd', done => {
+    const command = term._getCmdCommand('dir', 'C:\\Users');
+    expect(command).to.equal('start cmd /K "cd /d C:\\Users & dir\"');
+    done();
+  });
+});
