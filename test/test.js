@@ -14,7 +14,7 @@ describe('_joinCommands()', () => {
 
   it('should return the command to change the working directory', () => {
     let path = '/path/to/go';
-    let joined = 'cd "/path/to/go"';
+    let joined = 'cd \\"/path/to/go\\"';
     expect(term._joinCommands(path, '', '; ')).to.equal(joined);
     expect(term._joinCommands(path, null, '; ')).to.equal(joined);
   });
@@ -28,7 +28,7 @@ describe('_joinCommands()', () => {
   it('should join the commands', () => {
     let cmd = 'foo bar';
     let path = '/path/to/go';
-    let joined = 'cd "/path/to/go"; foo bar';
+    let joined = 'cd \\"/path/to/go\\"; foo bar';
     expect(term._joinCommands(path, cmd, '; ')).to.equal(joined);
   });
 });
@@ -64,7 +64,7 @@ describe('getWindowsCommand()', () => {
 describe('getLinuxCommand()', () => {
   it('should return the correct command for linux', () => {
     let cmd = term._getLinuxCommand('foo bar', '/path/to/go', 'konsole');
-    let string = `konsole -e 'bash -c "cd "/path/to/go"; foo bar; exec bash"'`
+    let string = `konsole -e 'bash -c "cd \\"/path/to/go\\"; foo bar; exec bash"'`
     expect(cmd).to.equal(string);
   });
 
@@ -79,7 +79,7 @@ describe('getDarwinCommand()', () => {
     term._getDarwinCommand('foo bar', '/path/to/go', 'iTerm.app', (err, cmd) => {
       let scriptPath = path.join(__dirname, '..', 'cmd-script.sh');
       let stats = fs.statSync(scriptPath);
-      let script = '#!/bin/bash\ncd "/path/to/go"\nfoo bar\n/bin/bash';
+      let script = '#!/bin/bash\ncd \\"/path/to/go\\"\nfoo bar\n/bin/bash';
 
       expect(stats.isFile()).to.be.true;
       expect(fs.readFileSync(scriptPath, {encoding: 'utf8'})).to.equal(script);
@@ -90,7 +90,7 @@ describe('getDarwinCommand()', () => {
 
   it('should return the command to open a path', (done) => {
     term._getDarwinCommand('', '/path/to/go', 'iTerm.app', (err, cmd) => {
-      expect(cmd).to.equal('open -a iTerm.app "/path/to/go"');
+      expect(cmd).to.equal('open -a iTerm.app \\"/path/to/go\\"');
       done(err);
     });
   });

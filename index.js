@@ -37,7 +37,7 @@ function _getDarwinCommand(command, cwd, terminal, callback) {
 
   if (!command) {
     if (cwd) {
-      cmd = `${cmd} "${cwd}"`;
+      cmd = `${cmd} \\"${cwd}\\"`;
     }
     callback(null, cmd);
   } else {
@@ -212,7 +212,7 @@ function getDefaultTerminal() {
 function _joinCommands(cwd, cmd, delimiter) {
   var cmds = [];
   if (cwd) {
-    cmds.push(`cd "${cwd}"`);
+    cmds.push(`cd \\"${cwd}\\"`);
   }
   if (cmd) {
     cmds.push(cmd);
